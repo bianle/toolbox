@@ -5,6 +5,7 @@ import {
   Globe,
   KeyRound,
   QrCode,
+  Shield,
   Smile,
 } from 'lucide-react'
 import { lazy } from 'react'
@@ -81,6 +82,16 @@ export const tools: ToolDefinition[] = [
     keywords: ['base', 'binary', 'hex', 'octal', '进制', '二进制', '十六进制'],
     icon: Binary,
     component: lazy(() => import('@/tools/base-convert')),
+  },
+  {
+    id: 'bcrypt',
+    name: 'Bcrypt',
+    description: '本地生成 Bcrypt 哈希并比对明文',
+    path: '/bcrypt',
+    category: 'encode',
+    keywords: ['bcrypt', 'hash', 'password', 'salt', '加密', '比对'],
+    icon: Shield,
+    component: lazy(() => import('@/tools/bcrypt')),
   },
 ]
 
