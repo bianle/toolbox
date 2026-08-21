@@ -1,4 +1,4 @@
-import { Braces } from 'lucide-react'
+import { Braces, Smile } from 'lucide-react'
 import { lazy } from 'react'
 
 import type { ToolDefinition } from '@/types/tool'
@@ -13,6 +13,16 @@ export const tools: ToolDefinition[] = [
     keywords: ['json', 'format', 'beautify', 'minify'],
     icon: Braces,
     component: lazy(() => import('@/tools/json-format')),
+  },
+  {
+    id: 'diceface',
+    name: 'DiceFace',
+    description: '从任意字符串生成唯一、可复现的哈希头像',
+    path: '/diceface',
+    category: 'other',
+    keywords: ['avatar', 'dicebear', 'hash', '头像', 'identicon'],
+    icon: Smile,
+    component: lazy(() => import('@/tools/diceface')),
   },
 ]
 
