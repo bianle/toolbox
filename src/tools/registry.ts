@@ -1,4 +1,12 @@
-import { Braces, FileKey2, Globe, KeyRound, QrCode, Smile } from 'lucide-react'
+import {
+  Binary,
+  Braces,
+  FileKey2,
+  Globe,
+  KeyRound,
+  QrCode,
+  Smile,
+} from 'lucide-react'
 import { lazy } from 'react'
 
 import type { ToolDefinition } from '@/types/tool'
@@ -63,6 +71,16 @@ export const tools: ToolDefinition[] = [
     keywords: ['jwt', 'token', 'decode', 'base64', '鉴权'],
     icon: FileKey2,
     component: lazy(() => import('@/tools/jwt')),
+  },
+  {
+    id: 'base-convert',
+    name: '进制转换',
+    description: '在 2–36 进制之间转换整数',
+    path: '/base-convert',
+    category: 'convert',
+    keywords: ['base', 'binary', 'hex', 'octal', '进制', '二进制', '十六进制'],
+    icon: Binary,
+    component: lazy(() => import('@/tools/base-convert')),
   },
 ]
 
