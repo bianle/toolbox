@@ -1,4 +1,4 @@
-import { Braces, Smile } from 'lucide-react'
+import { Braces, Globe, Smile } from 'lucide-react'
 import { lazy } from 'react'
 
 import type { ToolDefinition } from '@/types/tool'
@@ -23,6 +23,16 @@ export const tools: ToolDefinition[] = [
     keywords: ['avatar', 'dicebear', 'hash', '头像', 'identicon'],
     icon: Smile,
     component: lazy(() => import('@/tools/diceface')),
+  },
+  {
+    id: 'public-ip',
+    name: '外网 IP',
+    description: '查询当前设备的出口公网 IP',
+    path: '/public-ip',
+    category: 'other',
+    keywords: ['ip', 'public', '外网', '公网', 'ipify'],
+    icon: Globe,
+    component: lazy(() => import('@/tools/public-ip')),
   },
 ]
 
