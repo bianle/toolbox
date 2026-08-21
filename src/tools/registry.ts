@@ -1,4 +1,4 @@
-import { Braces, Globe, Smile } from 'lucide-react'
+import { Braces, Globe, QrCode, Smile } from 'lucide-react'
 import { lazy } from 'react'
 
 import type { ToolDefinition } from '@/types/tool'
@@ -33,6 +33,16 @@ export const tools: ToolDefinition[] = [
     keywords: ['ip', 'public', '外网', '公网', 'ipify'],
     icon: Globe,
     component: lazy(() => import('@/tools/public-ip')),
+  },
+  {
+    id: 'qr-code',
+    name: '二维码生成',
+    description: '将文本或链接生成本地二维码',
+    path: '/qr-code',
+    category: 'convert',
+    keywords: ['qr', 'qrcode', '二维码', 'barcode'],
+    icon: QrCode,
+    component: lazy(() => import('@/tools/qr-code')),
   },
 ]
 
