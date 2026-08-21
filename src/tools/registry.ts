@@ -1,4 +1,4 @@
-import { Braces, Globe, KeyRound, QrCode, Smile } from 'lucide-react'
+import { Braces, FileKey2, Globe, KeyRound, QrCode, Smile } from 'lucide-react'
 import { lazy } from 'react'
 
 import type { ToolDefinition } from '@/types/tool'
@@ -53,6 +53,16 @@ export const tools: ToolDefinition[] = [
     keywords: ['otp', 'totp', '2fa', 'authenticator', '验证码'],
     icon: KeyRound,
     component: lazy(() => import('@/tools/otp')),
+  },
+  {
+    id: 'jwt',
+    name: 'JWT 解析',
+    description: '本地解码 JWT Header / Payload，查看过期时间',
+    path: '/jwt',
+    category: 'encode',
+    keywords: ['jwt', 'token', 'decode', 'base64', '鉴权'],
+    icon: FileKey2,
+    component: lazy(() => import('@/tools/jwt')),
   },
 ]
 
