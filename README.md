@@ -1,32 +1,44 @@
-# React + TypeScript + Vite
+# Toolbox
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+个人用 HTML 工具集：纯前端、本地处理，不依赖自建后端。
 
-Currently, two official plugins are available:
+## 技术栈
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Vite + React + TypeScript
+- shadcn/ui + Tailwind CSS
+- react-router-dom
 
-## React Compiler
+## 已有工具
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| 工具 | 路径 | 说明 |
+|------|------|------|
+| JSON 格式化 | `/json-format` | 格式化、压缩与校验 |
+| DiceFace | `/diceface` | 字符串生成可复现哈希头像 |
+| 外网 IP | `/public-ip` | 查询出口公网 IPv4 / IPv6 |
+| 二维码生成 | `/qr-code` | 文本/链接生成本地二维码 |
+| OTP 生成器 | `/otp` | 本地 TOTP、绑定二维码 |
 
-## Expanding the Oxlint configuration
+## 开发
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+pnpm install
+pnpm dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+构建与预览：
+
+```bash
+pnpm build
+pnpm preview
+```
+
+## 添加工具
+
+1. 在 `src/tools/<id>/` 新建工具组件（默认导出）
+2. 在 `src/tools/registry.ts` 注册一项（名称、路径、懒加载等）
+
+侧边导航与路由会自动接入。
+
+## 理念
+
+优先可插拔的纯前端小工具；需要服务端代理的能力（如主流 AI API）暂不纳入本仓库。
