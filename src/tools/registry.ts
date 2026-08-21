@@ -1,5 +1,6 @@
 import {
   Binary,
+  BookKey,
   Braces,
   FileKey2,
   Globe,
@@ -92,6 +93,28 @@ export const tools: ToolDefinition[] = [
     keywords: ['bcrypt', 'hash', 'password', 'salt', '加密', '比对'],
     icon: Shield,
     component: lazy(() => import('@/tools/bcrypt')),
+  },
+  {
+    id: 'bip39',
+    name: 'BIP39 助记词',
+    description: '本地生成/校验助记词，派生多链钱包地址',
+    path: '/bip39',
+    category: 'other',
+    keywords: [
+      'bip39',
+      'mnemonic',
+      'seed',
+      'wallet',
+      'ethereum',
+      'bitcoin',
+      'tron',
+      'cosmos',
+      '助记词',
+      '钱包',
+      '地址',
+    ],
+    icon: BookKey,
+    component: lazy(() => import('@/tools/bip39')),
   },
 ]
 
