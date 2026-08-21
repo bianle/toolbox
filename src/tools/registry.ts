@@ -1,4 +1,4 @@
-import { Braces, Globe, QrCode, Smile } from 'lucide-react'
+import { Braces, Globe, KeyRound, QrCode, Smile } from 'lucide-react'
 import { lazy } from 'react'
 
 import type { ToolDefinition } from '@/types/tool'
@@ -43,6 +43,16 @@ export const tools: ToolDefinition[] = [
     keywords: ['qr', 'qrcode', '二维码', 'barcode'],
     icon: QrCode,
     component: lazy(() => import('@/tools/qr-code')),
+  },
+  {
+    id: 'otp',
+    name: 'OTP 生成器',
+    description: '本地生成 TOTP 验证码与 otpauth URI',
+    path: '/otp',
+    category: 'other',
+    keywords: ['otp', 'totp', '2fa', 'authenticator', '验证码'],
+    icon: KeyRound,
+    component: lazy(() => import('@/tools/otp')),
   },
 ]
 

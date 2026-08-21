@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import { AppLayout } from '@/components/app-layout'
+import { Toaster } from '@/components/ui/sonner'
 import { HomePage } from '@/pages/home-page'
 import { ToolPage } from '@/pages/tool-page'
 import { tools } from '@/tools/registry'
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
+      <Toaster position="top-center" richColors closeButton />
     </BrowserRouter>
   )
 }
