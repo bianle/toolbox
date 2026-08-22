@@ -225,7 +225,7 @@ export default function OtpTool() {
     return () => window.clearInterval(id)
   }, [totp, base32])
 
-  const progress = totp ? (totp.period - remaining) / totp.period : 0
+  const progress = totp ? remaining / totp.period : 0
 
   return (
     <div className="flex flex-col gap-6">
