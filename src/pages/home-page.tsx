@@ -16,7 +16,7 @@ export function HomePage() {
           工具集
         </h1>
         <p className="text-sm text-muted-foreground">
-          选择一个工具开始。新工具放到 <code>src/tools</code> 并注册即可。
+          本地处理、不上传数据。从下方挑选一个工具即可开始。
         </p>
       </div>
 
