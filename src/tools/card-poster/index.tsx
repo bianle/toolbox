@@ -20,6 +20,11 @@ import { cn } from '@/lib/utils'
 import { exportCardPng, exportCardSvg } from '@/tools/card-poster/export'
 import { renderMarkdown } from '@/tools/card-poster/markdown'
 import {
+  MarkdownToolbar,
+  applyMarkdownFormat,
+  type MarkdownFormat,
+} from '@/tools/card-poster/markdown-toolbar'
+import {
   BG_PRESETS,
   CARD_RATIOS,
   CARD_SURFACE,
@@ -59,6 +64,7 @@ export default function CardPosterTool() {
   const [exporting, setExporting] = useState<'png' | 'svg' | null>(null)
   const [measuredHeight, setMeasuredHeight] = useState<number>()
   const cardRef = useRef<HTMLDivElement>(null)
+  const markdownRef = useRef<HTMLTextAreaElement>(null)
 
   const freeMode = isFreeRatio(ratioValue)
   const canvas = getCanvasSize(ratioValue, canvasWidth, measuredHeight)
@@ -98,6 +104,20 @@ export default function CardPosterTool() {
   function handleRatioChange(next: CardRatio) {
     setRatioValue(next)
     setCanvasWidth(getRatio(next).defaultWidth)
+  }
+
+  function handleMarkdownFormat(format: MarkdownFormat) {
+    const el = markdownRef.current
+    const start = el?.selectionStart ?? markdown.length
+    const end = el?.selectionEnd ?? markdown.length
+    const next = applyMarkdownFormat(markdown, start, end, format)
+    setMarkdown(next.value)
+    requestAnimationFrame(() => {
+      const target = markdownRef.current
+      if (!target) return
+      target.focus()
+      target.setSelectionRange(next.selectionStart, next.selectionEnd)
+    })
   }
 
   function applyPreset(id: string) {
@@ -333,14 +353,18 @@ export default function CardPosterTool() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Field>
           <FieldLabel htmlFor="card-poster-md">Markdown</FieldLabel>
-          <Textarea
-            id="card-poster-md"
-            value={markdown}
-            onChange={(event) => setMarkdown(event.target.value)}
-            placeholder="输入 Markdown…"
-            className="min-h-[28rem] font-mono text-sm"
-            spellCheck={false}
-          />
+          <div className="overflow-hidden rounded-lg border border-input">
+            <MarkdownToolbar onFormat={handleMarkdownFormat} />
+            <Textarea
+              id="card-poster-md"
+              ref={markdownRef}
+              value={markdown}
+              onChange={(event) => setMarkdown(event.target.value)}
+              placeholder="输入 Markdown…"
+              className="min-h-[28rem] rounded-none border-0 font-mono text-sm shadow-none focus-visible:ring-0"
+              spellCheck={false}
+            />
+          </div>
         </Field>
 
         <div className="flex flex-col gap-2">
