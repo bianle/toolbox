@@ -180,10 +180,10 @@ export default function CardPosterTool() {
                     aria-pressed={active}
                     onClick={() => applyPreset(preset.id)}
                     className={cn(
-                      'size-10 rounded-md border-2 transition-transform',
+                      'size-10 rounded-md',
                       active
-                        ? 'scale-105 border-foreground'
-                        : 'border-transparent hover:scale-105',
+                        ? 'ring-2 ring-foreground ring-offset-2 ring-offset-background'
+                        : 'hover:ring-2 hover:ring-border',
                     )}
                     style={{ background: preset.preview }}
                   />
