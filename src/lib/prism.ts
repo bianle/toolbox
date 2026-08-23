@@ -3,8 +3,16 @@ import 'prismjs/components/prism-json'
 import 'prismjs/components/prism-yaml'
 import 'prismjs/components/prism-markup'
 import 'prismjs/components/prism-sql'
+import 'prismjs/components/prism-toml'
 
-export type PrismLanguage = 'json' | 'yaml' | 'xml' | 'html' | 'markup' | 'sql'
+export type PrismLanguage =
+  | 'json'
+  | 'yaml'
+  | 'xml'
+  | 'html'
+  | 'markup'
+  | 'sql'
+  | 'toml'
 
 const LANGUAGE_ALIASES: Record<string, string> = {
   json: 'json',
@@ -14,6 +22,7 @@ const LANGUAGE_ALIASES: Record<string, string> = {
   html: 'markup',
   markup: 'markup',
   sql: 'sql',
+  toml: 'toml',
 }
 
 export function resolvePrismLanguage(language: string) {

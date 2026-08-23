@@ -1,4 +1,5 @@
 import {
+  ArrowLeftRight,
   Binary,
   Bomb,
   BookKey,
@@ -58,6 +59,25 @@ export const tools: ToolDefinition[] = [
     ],
     icon: Database,
     component: lazy(() => import('@/tools/sql-format')),
+  },
+  {
+    id: 'data-convert',
+    name: '数据格式互转',
+    description: 'JSON / YAML / XML / TOML 互相转换',
+    path: '/data-convert',
+    category: 'convert',
+    keywords: [
+      'json',
+      'yaml',
+      'xml',
+      'toml',
+      'convert',
+      'transform',
+      '互转',
+      '转换',
+    ],
+    icon: ArrowLeftRight,
+    component: lazy(() => import('@/tools/data-convert')),
   },
   {
     id: 'detect-delimiter',
