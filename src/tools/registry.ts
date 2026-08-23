@@ -29,8 +29,8 @@ export const tools: ToolDefinition[] = [
   },
   {
     id: 'detect-delimiter',
-    name: '分隔符识别',
-    description: '从样例文本智能识别分隔符并预览拆分结果',
+    name: '文本分割',
+    description: '按分隔符拆分文本，并预览表格结果',
     path: '/detect-delimiter',
     category: 'text',
     keywords: [
@@ -39,6 +39,7 @@ export const tools: ToolDefinition[] = [
       'csv',
       'tsv',
       'split',
+      '文本分割',
       '分隔符',
       '逗号',
       '制表符',
