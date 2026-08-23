@@ -20,22 +20,40 @@ export interface BackgroundPreset {
   direction: GradientDirection
 }
 
-/** 内容卡片样式（白底正文，不随背景变） */
+/** 内容卡片样式 */
 export const CARD_SURFACE = {
   card: '#ffffff',
-  foreground: '#1c1917',
-  muted: 'rgba(28, 25, 23, 0.58)',
-  accent: '#2563eb',
-  border: 'rgba(28, 25, 23, 0.06)',
-  shadow: '0 24px 60px rgba(15, 23, 42, 0.18)',
-  fontDisplay: '"Songti SC", "Noto Serif SC", "Source Han Serif SC", serif',
-  fontBody: '"PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif',
+  textPrimary: '#0F0F0F',
+  textSecondary: '#525252',
+  textTertiary: '#878787',
+  primary: '#5B5BD6',
+  primaryHover: '#4A4AC4',
+  backgroundSecondary: '#FAFAFA',
+  backgroundGray: '#F5F5F5',
+  border: '#E6E6E6',
+  shadow: '0 2px 4px rgba(0, 0, 0, 0.06)',
+  fontBody:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Noto Sans SC", sans-serif',
+  fontMono:
+    '"SF Mono", Monaco, Inconsolata, "Roboto Mono", ui-monospace, monospace',
+  baseFontSize: 18,
+  contentPadding: 24,
+  framePadding: 32,
 } as const
 
-/**
- * 背景预设：与 ../madopic/script.js 的 backgroundPresets 对齐
- * @see ../madopic/script.js
- */
+/** 正文字号派生变量 */
+export function buildContentFontVars(baseFontSize: number = CARD_SURFACE.baseFontSize) {
+  return {
+    '--dynamic-font-size': `${baseFontSize}px`,
+    '--dynamic-h1-size': `${Math.round(baseFontSize * 1.75)}px`,
+    '--dynamic-h2-size': `${Math.round(baseFontSize * 1.375)}px`,
+    '--dynamic-h3-size': `${Math.round(baseFontSize * 1.125)}px`,
+    '--dynamic-code-size': `${Math.round(baseFontSize * 0.875)}px`,
+    '--dynamic-quote-size': `${Math.round(baseFontSize * 0.95)}px`,
+  } as const
+}
+
+/** 背景渐变预设 */
 export const BG_PRESETS: BackgroundPreset[] = [
   {
     id: 'gradient1',
@@ -104,7 +122,7 @@ export const BG_PRESETS: BackgroundPreset[] = [
   },
 ]
 
-/** 与 madopic/index.html #gradientDirection 选项对齐 */
+/** 渐变方向选项 */
 export const GRADIENT_DIRECTIONS: {
   value: GradientDirection
   label: string
@@ -132,16 +150,33 @@ export function buildGradient(
 export const CARD_RATIOS: {
   value: CardRatio
   label: string
-  width: number
-  height: number
+  /** width / height */
+  aspect: number
+  /** 切换比例时的默认宽度 */
+  defaultWidth: number
 }[] = [
-  { value: '3:4', label: '3:4 小红书', width: 900, height: 1200 },
-  { value: '1:1', label: '1:1 方形', width: 1080, height: 1080 },
-  { value: '9:16', label: '9:16 竖版', width: 1080, height: 1920 },
+  { value: '3:4', label: '3:4 小红书', aspect: 3 / 4, defaultWidth: 640 },
+  { value: '1:1', label: '1:1 方形', aspect: 1, defaultWidth: 640 },
+  { value: '9:16', label: '9:16 竖版', aspect: 9 / 16, defaultWidth: 640 },
 ]
+
+/** 文字与布局滑块范围 */
+export const LAYOUT_LIMITS = {
+  fontSize: { min: 14, max: 22, step: 0.5, default: 18 },
+  width: { min: 480, max: 800, step: 20, default: 640 },
+  padding: { min: 8, max: 60, step: 2, default: 24 },
+} as const
 
 export function getRatio(value: CardRatio) {
   return CARD_RATIOS.find((ratio) => ratio.value === value) ?? CARD_RATIOS[0]
+}
+
+export function getCanvasSize(ratioValue: CardRatio, width: number) {
+  const ratio = getRatio(ratioValue)
+  return {
+    width,
+    height: Math.round(width / ratio.aspect),
+  }
 }
 
 export const SAMPLE_MARKDOWN = `# 周末笔记

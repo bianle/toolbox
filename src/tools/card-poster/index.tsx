@@ -5,7 +5,6 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Field,
-  FieldDescription,
   FieldLabel,
 } from '@/components/ui/field'
 import {
@@ -25,8 +24,11 @@ import {
   CARD_RATIOS,
   CARD_SURFACE,
   GRADIENT_DIRECTIONS,
+  LAYOUT_LIMITS,
   SAMPLE_MARKDOWN,
+  buildContentFontVars,
   buildGradient,
+  getCanvasSize,
   getRatio,
   type CardRatio,
   type GradientDirection,
@@ -37,6 +39,15 @@ const DEFAULT_PRESET = BG_PRESETS[0]
 export default function CardPosterTool() {
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN)
   const [ratioValue, setRatioValue] = useState<CardRatio>('3:4')
+  const [canvasWidth, setCanvasWidth] = useState<number>(
+    LAYOUT_LIMITS.width.default,
+  )
+  const [fontSize, setFontSize] = useState<number>(
+    LAYOUT_LIMITS.fontSize.default,
+  )
+  const [contentPadding, setContentPadding] = useState<number>(
+    LAYOUT_LIMITS.padding.default,
+  )
   const [presetId, setPresetId] = useState<string | 'custom'>(DEFAULT_PRESET.id)
   const [colorStart, setColorStart] = useState(DEFAULT_PRESET.start)
   const [colorEnd, setColorEnd] = useState(DEFAULT_PRESET.end)
@@ -47,9 +58,8 @@ export default function CardPosterTool() {
   const [exporting, setExporting] = useState<'png' | 'svg' | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
 
-  const ratio = getRatio(ratioValue)
+  const canvas = getCanvasSize(ratioValue, canvasWidth)
   const html = useMemo(() => renderMarkdown(markdown), [markdown])
-
   const backdrop = useMemo(() => {
     if (presetId !== 'custom') {
       const preset = BG_PRESETS.find((item) => item.id === presetId)
@@ -58,9 +68,16 @@ export default function CardPosterTool() {
     return buildGradient(colorStart, colorEnd, direction, colorMid)
   }, [presetId, colorStart, colorEnd, colorMid, direction])
 
-  const framePadding = ratio.value === '9:16' ? 56 : 48
-  const cardRadius = 28
-  const previewScale = Math.min(1, 360 / ratio.width)
+  const framePadding = CARD_SURFACE.framePadding
+  const outerRadius = 0
+  const innerRadius = 8
+  const previewScale = Math.min(1, 360 / canvas.width)
+  const contentFontVars = buildContentFontVars(fontSize)
+
+  function handleRatioChange(next: CardRatio) {
+    setRatioValue(next)
+    setCanvasWidth(getRatio(next).defaultWidth)
+  }
 
   function applyPreset(id: string) {
     const preset = BG_PRESETS.find((item) => item.id === id)
@@ -104,10 +121,6 @@ export default function CardPosterTool() {
 
   return (
     <div className="flex flex-col gap-4">
-      <FieldDescription>
-        把 Markdown 排成分享卡片，导出 SVG / PNG，适合小红书与朋友圈。本地生成，不上传。
-      </FieldDescription>
-
       <div className="flex flex-col gap-3 rounded-lg border border-input p-3">
         <FieldLabel>背景设置</FieldLabel>
 
@@ -195,6 +208,73 @@ export default function CardPosterTool() {
         </div>
       </div>
 
+      <div className="flex flex-col gap-3 rounded-lg border border-input p-3">
+        <FieldLabel>文字与布局</FieldLabel>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-muted-foreground">文字设置</span>
+            <label className="flex flex-col gap-2 text-sm">
+              <span className="flex items-center justify-between gap-2">
+                <span>文字大小</span>
+                <span className="font-mono tabular-nums text-muted-foreground">
+                  {fontSize}px
+                </span>
+              </span>
+              <input
+                type="range"
+                min={LAYOUT_LIMITS.fontSize.min}
+                max={LAYOUT_LIMITS.fontSize.max}
+                step={LAYOUT_LIMITS.fontSize.step}
+                value={fontSize}
+                onChange={(event) => setFontSize(Number(event.target.value))}
+                className="w-full accent-foreground"
+              />
+            </label>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <span className="text-sm text-muted-foreground">布局设置</span>
+            <label className="flex flex-col gap-2 text-sm">
+              <span className="flex items-center justify-between gap-2">
+                <span>整体宽度</span>
+                <span className="font-mono tabular-nums text-muted-foreground">
+                  {canvasWidth}px
+                </span>
+              </span>
+              <input
+                type="range"
+                min={LAYOUT_LIMITS.width.min}
+                max={LAYOUT_LIMITS.width.max}
+                step={LAYOUT_LIMITS.width.step}
+                value={canvasWidth}
+                onChange={(event) => setCanvasWidth(Number(event.target.value))}
+                className="w-full accent-foreground"
+              />
+            </label>
+            <label className="flex flex-col gap-2 text-sm">
+              <span className="flex items-center justify-between gap-2">
+                <span>卡片边距</span>
+                <span className="font-mono tabular-nums text-muted-foreground">
+                  {contentPadding}px
+                </span>
+              </span>
+              <input
+                type="range"
+                min={LAYOUT_LIMITS.padding.min}
+                max={LAYOUT_LIMITS.padding.max}
+                step={LAYOUT_LIMITS.padding.step}
+                value={contentPadding}
+                onChange={(event) =>
+                  setContentPadding(Number(event.target.value))
+                }
+                className="w-full accent-foreground"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-2">
           <FieldLabel>比例</FieldLabel>
@@ -205,7 +285,7 @@ export default function CardPosterTool() {
                 type="button"
                 size="sm"
                 variant={ratioValue === item.value ? 'default' : 'outline'}
-                onClick={() => setRatioValue(item.value)}
+                onClick={() => handleRatioChange(item.value)}
               >
                 {item.label}
               </Button>
@@ -252,14 +332,14 @@ export default function CardPosterTool() {
           <div className="flex min-h-[28rem] items-start justify-center overflow-auto rounded-lg border border-input bg-muted/20 p-4">
             <div
               style={{
-                width: ratio.width * previewScale,
-                height: ratio.height * previewScale,
+                width: canvas.width * previewScale,
+                height: canvas.height * previewScale,
               }}
             >
               <div
                 style={{
-                  width: ratio.width,
-                  height: ratio.height,
+                  width: canvas.width,
+                  height: canvas.height,
                   transform: `scale(${previewScale})`,
                   transformOrigin: 'top left',
                 }}
@@ -268,13 +348,14 @@ export default function CardPosterTool() {
                   ref={cardRef}
                   className="card-poster-surface relative overflow-hidden"
                   style={{
-                    width: ratio.width,
-                    height: ratio.height,
+                    width: canvas.width,
+                    height: canvas.height,
                     background: backdrop,
                     boxSizing: 'border-box',
                     padding: framePadding,
                     display: 'flex',
                     flexDirection: 'column',
+                    borderRadius: outerRadius,
                   }}
                 >
                   <div
@@ -282,40 +363,33 @@ export default function CardPosterTool() {
                       flex: 1,
                       minHeight: 0,
                       background: CARD_SURFACE.card,
-                      color: CARD_SURFACE.foreground,
-                      borderRadius: cardRadius,
+                      color: CARD_SURFACE.textSecondary,
+                      borderRadius: innerRadius,
                       border: `1px solid ${CARD_SURFACE.border}`,
                       boxShadow: CARD_SURFACE.shadow,
                       fontFamily: CARD_SURFACE.fontBody,
                       boxSizing: 'border-box',
-                      padding:
-                        ratio.value === '9:16' ? '56px 48px' : '48px 44px',
+                      padding: contentPadding,
                       display: 'flex',
                       flexDirection: 'column',
                       overflow: 'hidden',
                     }}
                   >
                     <div
-                      style={{
-                        width: 40,
-                        height: 4,
-                        borderRadius: 999,
-                        background: CARD_SURFACE.accent,
-                        marginBottom: 28,
-                        flexShrink: 0,
-                      }}
-                    />
-                    <div
                       className="card-poster-content"
                       style={
                         {
-                          '--card-fg': CARD_SURFACE.foreground,
-                          '--card-muted': CARD_SURFACE.muted,
-                          '--card-accent': CARD_SURFACE.accent,
-                          '--card-display': CARD_SURFACE.fontDisplay,
-                          '--card-body': CARD_SURFACE.fontBody,
+                          ...contentFontVars,
+                          '--mp-text-primary': CARD_SURFACE.textPrimary,
+                          '--mp-text-secondary': CARD_SURFACE.textSecondary,
+                          '--mp-text-tertiary': CARD_SURFACE.textTertiary,
+                          '--mp-primary': CARD_SURFACE.primary,
+                          '--mp-bg-secondary': CARD_SURFACE.backgroundSecondary,
+                          '--mp-bg-gray': CARD_SURFACE.backgroundGray,
+                          '--mp-font-mono': CARD_SURFACE.fontMono,
                           flex: 1,
                           overflow: 'hidden',
+                          wordWrap: 'break-word',
                         } as CSSProperties
                       }
                       dangerouslySetInnerHTML={{
@@ -333,72 +407,127 @@ export default function CardPosterTool() {
       </div>
 
       <style>{`
-        .card-poster-content h1,
-        .card-poster-content h2,
-        .card-poster-content h3 {
-          font-family: var(--card-display);
-          font-weight: 600;
-          line-height: 1.25;
-          margin: 0 0 0.55em;
-          color: var(--card-fg);
+        .card-poster-content h1 {
+          font-size: var(--dynamic-h1-size, 28px);
+          font-weight: 700;
+          color: var(--mp-text-primary);
+          margin: 0 0 16px;
+          line-height: 1.3;
         }
-        .card-poster-content h1 { font-size: 52px; letter-spacing: -0.02em; }
-        .card-poster-content h2 { font-size: 34px; margin-top: 1.1em; }
-        .card-poster-content h3 { font-size: 26px; margin-top: 1em; }
+        .card-poster-content h2 {
+          font-size: var(--dynamic-h2-size, 22px);
+          font-weight: 600;
+          color: var(--mp-text-secondary);
+          margin: 24px 0 12px;
+          line-height: 1.4;
+        }
+        .card-poster-content h3 {
+          font-size: var(--dynamic-h3-size, 18px);
+          font-weight: 600;
+          color: var(--mp-text-secondary);
+          margin: 20px 0 8px;
+        }
         .card-poster-content p {
-          font-size: 24px;
+          font-size: var(--dynamic-font-size, 16px);
+          color: var(--mp-text-secondary);
+          margin: 0 0 16px;
           line-height: 1.7;
-          margin: 0 0 0.9em;
-          color: var(--card-fg);
         }
         .card-poster-content ul,
         .card-poster-content ol {
-          margin: 0 0 1em;
-          padding-left: 1.2em;
-          font-size: 22px;
-          line-height: 1.7;
+          margin: 16px 0;
+          padding-left: 24px;
         }
-        .card-poster-content li { margin: 0.25em 0; }
-        .card-poster-content blockquote {
-          margin: 1em 0;
-          padding: 0.2em 0 0.2em 0.9em;
-          border-left: 4px solid var(--card-accent);
-          color: var(--card-muted);
-          font-family: var(--card-display);
-          font-size: 26px;
+        .card-poster-content li {
+          font-size: var(--dynamic-font-size, 16px);
+          color: var(--mp-text-secondary);
+          margin-bottom: 8px;
           line-height: 1.6;
+          display: list-item;
+        }
+        .card-poster-content blockquote {
+          border-left: 4px solid #d1d5db;
+          padding: 6px 0 6px 16px;
+          margin: 12px 0;
+          background: var(--mp-bg-secondary);
+          color: var(--mp-text-tertiary);
+          font-style: italic;
+          font-size: var(--dynamic-quote-size, 16px);
+        }
+        .card-poster-content blockquote p {
+          margin: 0;
+          line-height: inherit;
         }
         .card-poster-content code {
-          font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-          font-size: 0.9em;
-          padding: 0.1em 0.35em;
-          border-radius: 6px;
-          background: color-mix(in oklab, var(--card-accent) 14%, transparent);
+          background: var(--mp-bg-gray);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: var(--mp-font-mono);
+          font-size: var(--dynamic-code-size, 14px);
+          color: var(--mp-primary);
+          display: inline;
+          line-height: inherit;
+          vertical-align: baseline;
         }
         .card-poster-content pre {
-          margin: 0.8em 0 1em;
-          padding: 0.9em 1em;
-          border-radius: 14px;
-          overflow: auto;
-          background: color-mix(in oklab, var(--card-fg) 6%, transparent);
-          font-size: 18px;
-          line-height: 1.55;
+          background: var(--mp-text-primary);
+          color: #e2e8f0;
+          padding: 16px;
+          border-radius: 6px;
+          margin: 16px 0;
+          display: block;
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+          word-break: break-all;
         }
         .card-poster-content pre code {
-          padding: 0;
           background: transparent;
+          color: inherit;
+          padding: 0;
         }
         .card-poster-content a {
-          color: var(--card-accent);
-          text-decoration: underline;
-          text-underline-offset: 3px;
+          color: var(--mp-primary);
+          text-decoration: none;
+          border-bottom: 1px solid var(--mp-primary);
         }
-        .card-poster-content strong { font-weight: 700; }
-        .card-poster-content em { font-style: italic; }
+        .card-poster-content strong {
+          font-weight: 700;
+          color: var(--mp-text-primary);
+        }
+        .card-poster-content em {
+          font-style: italic;
+          color: var(--mp-primary);
+        }
         .card-poster-content hr {
           border: 0;
-          border-top: 1px solid color-mix(in oklab, var(--card-fg) 14%, transparent);
-          margin: 1.4em 0;
+          border-top: 1px solid #e6e6e6;
+          margin: 16px 0;
+        }
+        .card-poster-content img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 6px;
+          margin: 16px auto;
+          display: block;
+        }
+        .card-poster-content table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 16px 0;
+          font-size: 14px;
+          table-layout: fixed;
+        }
+        .card-poster-content th,
+        .card-poster-content td {
+          padding: 8px 12px;
+          border: 1px solid #e6e6e6;
+          text-align: left;
+          word-break: break-word;
+        }
+        .card-poster-content th {
+          background: #fafafa;
+          font-weight: 600;
         }
       `}</style>
     </div>
