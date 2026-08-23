@@ -1,4 +1,4 @@
-export type CardRatio = '3:4' | '1:1' | '9:16'
+export type CardRatio = 'free' | '3:4' | '1:1' | '9:16'
 
 export type GradientDirection =
   | '135deg'
@@ -150,11 +150,12 @@ export function buildGradient(
 export const CARD_RATIOS: {
   value: CardRatio
   label: string
-  /** width / height */
-  aspect: number
+  /** width / height；自由模式按内容自适应 */
+  aspect: number | null
   /** 切换比例时的默认宽度 */
   defaultWidth: number
 }[] = [
+  { value: 'free', label: '自由', aspect: null, defaultWidth: 640 },
   { value: '3:4', label: '3:4 小红书', aspect: 3 / 4, defaultWidth: 640 },
   { value: '1:1', label: '1:1 方形', aspect: 1, defaultWidth: 640 },
   { value: '9:16', label: '9:16 竖版', aspect: 9 / 16, defaultWidth: 640 },
@@ -171,11 +172,28 @@ export function getRatio(value: CardRatio) {
   return CARD_RATIOS.find((ratio) => ratio.value === value) ?? CARD_RATIOS[0]
 }
 
-export function getCanvasSize(ratioValue: CardRatio, width: number) {
+export function isFreeRatio(value: CardRatio) {
+  return value === 'free'
+}
+
+export function getCanvasSize(
+  ratioValue: CardRatio,
+  width: number,
+  /** 自由模式下用实测内容高度 */
+  measuredHeight?: number,
+) {
   const ratio = getRatio(ratioValue)
+  if (ratio.aspect == null) {
+    return {
+      width,
+      height: measuredHeight ?? Math.round(width * 0.75),
+      autoHeight: true as const,
+    }
+  }
   return {
     width,
     height: Math.round(width / ratio.aspect),
+    autoHeight: false as const,
   }
 }
 

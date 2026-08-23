@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { DownloadIcon, ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -30,6 +30,7 @@ import {
   buildGradient,
   getCanvasSize,
   getRatio,
+  isFreeRatio,
   type CardRatio,
   type GradientDirection,
 } from '@/tools/card-poster/themes'
@@ -38,7 +39,7 @@ const DEFAULT_PRESET = BG_PRESETS[0]
 
 export default function CardPosterTool() {
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN)
-  const [ratioValue, setRatioValue] = useState<CardRatio>('3:4')
+  const [ratioValue, setRatioValue] = useState<CardRatio>('free')
   const [canvasWidth, setCanvasWidth] = useState<number>(
     LAYOUT_LIMITS.width.default,
   )
@@ -56,9 +57,11 @@ export default function CardPosterTool() {
     DEFAULT_PRESET.direction,
   )
   const [exporting, setExporting] = useState<'png' | 'svg' | null>(null)
+  const [measuredHeight, setMeasuredHeight] = useState<number>()
   const cardRef = useRef<HTMLDivElement>(null)
 
-  const canvas = getCanvasSize(ratioValue, canvasWidth)
+  const freeMode = isFreeRatio(ratioValue)
+  const canvas = getCanvasSize(ratioValue, canvasWidth, measuredHeight)
   const html = useMemo(() => renderMarkdown(markdown), [markdown])
   const backdrop = useMemo(() => {
     if (presetId !== 'custom') {
@@ -73,6 +76,24 @@ export default function CardPosterTool() {
   const innerRadius = 8
   const previewScale = Math.min(1, 360 / canvas.width)
   const contentFontVars = buildContentFontVars(fontSize)
+
+  useLayoutEffect(() => {
+    if (!freeMode) {
+      setMeasuredHeight(undefined)
+      return
+    }
+    const node = cardRef.current
+    if (!node) return
+
+    const update = () => {
+      setMeasuredHeight(node.offsetHeight)
+    }
+    update()
+
+    const observer = new ResizeObserver(update)
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [freeMode, markdown, canvasWidth, fontSize, contentPadding, backdrop])
 
   function handleRatioChange(next: CardRatio) {
     setRatioValue(next)
@@ -124,33 +145,33 @@ export default function CardPosterTool() {
       <div className="flex flex-col gap-3 rounded-lg border border-input p-3">
         <FieldLabel>背景设置</FieldLabel>
 
-        <div className="flex flex-col gap-2">
-          <span className="text-sm text-muted-foreground">预设背景</span>
-          <div className="flex flex-wrap gap-2">
-            {BG_PRESETS.map((preset) => {
-              const active = presetId === preset.id
-              return (
-                <button
-                  key={preset.id}
-                  type="button"
-                  title={preset.id}
-                  aria-label={`预设 ${preset.id}`}
-                  aria-pressed={active}
-                  onClick={() => applyPreset(preset.id)}
-                  className={cn(
-                    'size-10 rounded-md border-2 transition-transform',
-                    active
-                      ? 'scale-105 border-foreground'
-                      : 'border-transparent hover:scale-105',
-                  )}
-                  style={{ background: preset.preview }}
-                />
-              )
-            })}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-muted-foreground">预设背景</span>
+            <div className="flex flex-wrap gap-2">
+              {BG_PRESETS.map((preset) => {
+                const active = presetId === preset.id
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    title={preset.id}
+                    aria-label={`预设 ${preset.id}`}
+                    aria-pressed={active}
+                    onClick={() => applyPreset(preset.id)}
+                    className={cn(
+                      'size-10 rounded-md border-2 transition-transform',
+                      active
+                        ? 'scale-105 border-foreground'
+                        : 'border-transparent hover:scale-105',
+                    )}
+                    style={{ background: preset.preview }}
+                  />
+                )
+              })}
+            </div>
           </div>
-        </div>
 
-        <div className="flex flex-wrap items-end gap-4">
           <div className="flex flex-col gap-2">
             <span className="text-sm text-muted-foreground">自定义颜色</span>
             <div className="flex flex-wrap gap-3">
@@ -181,7 +202,7 @@ export default function CardPosterTool() {
             </div>
           </div>
 
-          <div className="flex w-44 flex-col gap-2">
+          <div className="flex flex-col gap-2">
             <span className="text-sm text-muted-foreground">渐变方向</span>
             <Select
               value={direction}
@@ -211,33 +232,46 @@ export default function CardPosterTool() {
       <div className="flex flex-col gap-3 rounded-lg border border-input p-3">
         <FieldLabel>文字与布局</FieldLabel>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <span className="text-sm text-muted-foreground">文字设置</span>
-            <label className="flex flex-col gap-2 text-sm">
-              <span className="flex items-center justify-between gap-2">
-                <span>文字大小</span>
-                <span className="font-mono tabular-nums text-muted-foreground">
-                  {fontSize}px
-                </span>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <label className="flex flex-col gap-2 text-sm">
+            <span className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground">文字大小</span>
+              <span className="font-mono tabular-nums text-muted-foreground">
+                {fontSize}px
               </span>
-              <input
-                type="range"
-                min={LAYOUT_LIMITS.fontSize.min}
-                max={LAYOUT_LIMITS.fontSize.max}
-                step={LAYOUT_LIMITS.fontSize.step}
-                value={fontSize}
-                onChange={(event) => setFontSize(Number(event.target.value))}
-                className="w-full accent-foreground"
-              />
-            </label>
+            </span>
+            <input
+              type="range"
+              min={LAYOUT_LIMITS.fontSize.min}
+              max={LAYOUT_LIMITS.fontSize.max}
+              step={LAYOUT_LIMITS.fontSize.step}
+              value={fontSize}
+              onChange={(event) => setFontSize(Number(event.target.value))}
+              className="w-full accent-foreground"
+            />
+          </label>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-muted-foreground">比例</span>
+            <div className="flex flex-wrap gap-2">
+              {CARD_RATIOS.map((item) => (
+                <Button
+                  key={item.value}
+                  type="button"
+                  size="sm"
+                  variant={ratioValue === item.value ? 'default' : 'outline'}
+                  onClick={() => handleRatioChange(item.value)}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </div>
           </div>
 
           <div className="flex flex-col gap-3">
-            <span className="text-sm text-muted-foreground">布局设置</span>
             <label className="flex flex-col gap-2 text-sm">
               <span className="flex items-center justify-between gap-2">
-                <span>整体宽度</span>
+                <span className="text-muted-foreground">整体宽度</span>
                 <span className="font-mono tabular-nums text-muted-foreground">
                   {canvasWidth}px
                 </span>
@@ -252,9 +286,10 @@ export default function CardPosterTool() {
                 className="w-full accent-foreground"
               />
             </label>
+
             <label className="flex flex-col gap-2 text-sm">
               <span className="flex items-center justify-between gap-2">
-                <span>卡片边距</span>
+                <span className="text-muted-foreground">卡片边距</span>
                 <span className="font-mono tabular-nums text-muted-foreground">
                   {contentPadding}px
                 </span>
@@ -275,43 +310,24 @@ export default function CardPosterTool() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-2">
-          <FieldLabel>比例</FieldLabel>
-          <div className="flex flex-wrap gap-2">
-            {CARD_RATIOS.map((item) => (
-              <Button
-                key={item.value}
-                type="button"
-                size="sm"
-                variant={ratioValue === item.value ? 'default' : 'outline'}
-                onClick={() => handleRatioChange(item.value)}
-              >
-                {item.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            disabled={exporting !== null}
-            onClick={() => void handleExport('png')}
-          >
-            <ImageIcon data-icon="inline-start" />
-            {exporting === 'png' ? '导出中…' : '下载 PNG'}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={exporting !== null}
-            onClick={() => void handleExport('svg')}
-          >
-            <DownloadIcon data-icon="inline-start" />
-            {exporting === 'svg' ? '导出中…' : '下载 SVG'}
-          </Button>
-        </div>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          disabled={exporting !== null}
+          onClick={() => void handleExport('png')}
+        >
+          <ImageIcon data-icon="inline-start" />
+          {exporting === 'png' ? '导出中…' : '下载 PNG'}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={exporting !== null}
+          onClick={() => void handleExport('svg')}
+        >
+          <DownloadIcon data-icon="inline-start" />
+          {exporting === 'svg' ? '导出中…' : '下载 SVG'}
+        </Button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -339,7 +355,7 @@ export default function CardPosterTool() {
               <div
                 style={{
                   width: canvas.width,
-                  height: canvas.height,
+                  height: freeMode ? undefined : canvas.height,
                   transform: `scale(${previewScale})`,
                   transformOrigin: 'top left',
                 }}
@@ -349,7 +365,7 @@ export default function CardPosterTool() {
                   className="card-poster-surface relative overflow-hidden"
                   style={{
                     width: canvas.width,
-                    height: canvas.height,
+                    height: freeMode ? 'auto' : canvas.height,
                     background: backdrop,
                     boxSizing: 'border-box',
                     padding: framePadding,
@@ -360,8 +376,8 @@ export default function CardPosterTool() {
                 >
                   <div
                     style={{
-                      flex: 1,
-                      minHeight: 0,
+                      flex: freeMode ? undefined : 1,
+                      minHeight: freeMode ? undefined : 0,
                       background: CARD_SURFACE.card,
                       color: CARD_SURFACE.textSecondary,
                       borderRadius: innerRadius,
@@ -372,7 +388,7 @@ export default function CardPosterTool() {
                       padding: contentPadding,
                       display: 'flex',
                       flexDirection: 'column',
-                      overflow: 'hidden',
+                      overflow: freeMode ? 'visible' : 'hidden',
                     }}
                   >
                     <div
@@ -387,8 +403,8 @@ export default function CardPosterTool() {
                           '--mp-bg-secondary': CARD_SURFACE.backgroundSecondary,
                           '--mp-bg-gray': CARD_SURFACE.backgroundGray,
                           '--mp-font-mono': CARD_SURFACE.fontMono,
-                          flex: 1,
-                          overflow: 'hidden',
+                          flex: freeMode ? undefined : 1,
+                          overflow: freeMode ? 'visible' : 'hidden',
                           wordWrap: 'break-word',
                         } as CSSProperties
                       }
