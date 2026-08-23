@@ -134,6 +134,11 @@
   color: var(--foreground);
 }
 
+/* Prism class names can collide with Tailwind utilities (e.g. .table → display:table) */
+.code-block .token {
+  display: inline;
+}
+
 .code-block .token.comment,
 .code-block .token.prolog,
 .code-block .token.doctype,
