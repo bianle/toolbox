@@ -15,4 +15,8 @@ export default defineConfig({
       '@': path.resolve(rootDir, './src'),
     },
   },
+  // jieba-wasm 通过 import.meta.url 加载 .wasm，预构建会丢二进制
+  optimizeDeps: {
+    exclude: ['jieba-wasm'],
+  },
 })

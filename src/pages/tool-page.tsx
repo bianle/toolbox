@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { CATEGORY_LABELS } from '@/tools/categories'
 import { getToolById } from '@/tools/registry'
 
 interface ToolPageProps {
@@ -35,7 +36,7 @@ export function ToolPage({ toolId }: ToolPageProps) {
           <h1 className="font-heading text-2xl font-medium tracking-tight">
             {tool.name}
           </h1>
-          <Badge variant="secondary">{tool.category}</Badge>
+          <Badge variant="secondary">{CATEGORY_LABELS[tool.category]}</Badge>
         </div>
         <p className="text-sm text-muted-foreground">{tool.description}</p>
       </div>
