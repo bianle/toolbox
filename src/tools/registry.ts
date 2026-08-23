@@ -49,14 +49,17 @@ export const tools: ToolDefinition[] = [
   {
     id: 'text-bang',
     name: '文字大爆炸',
-    description: 'jieba 分词打散句子，点词即可复制',
+    description: 'jieba 或分隔符打散文本，点词即可复制',
     path: '/text-bang',
     category: 'text',
     keywords: [
       'jieba',
       'segment',
       'tokenize',
+      'delimiter',
+      'csv',
       '分词',
+      '分隔符',
       '大爆炸',
       'smartisan',
       '锤子',
