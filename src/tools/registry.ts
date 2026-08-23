@@ -20,10 +20,10 @@ export const tools: ToolDefinition[] = [
   {
     id: 'json-format',
     name: 'JSON 格式化',
-    description: '格式化、压缩与校验 JSON 文本',
+    description: '格式化、压缩、字段排序与自定义缩进',
     path: '/json-format',
     category: 'format',
-    keywords: ['json', 'format', 'beautify', 'minify'],
+    keywords: ['json', 'format', 'beautify', 'minify', 'sort', 'indent', '排序', '缩进'],
     icon: Braces,
     component: lazy(() => import('@/tools/json-format')),
   },

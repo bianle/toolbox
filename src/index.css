@@ -128,3 +128,94 @@
     @apply font-sans;
     }
 }
+
+/* Prism token colors — keep lightweight, follow theme tokens */
+.code-block {
+  color: var(--foreground);
+}
+
+.code-block .token.comment,
+.code-block .token.prolog,
+.code-block .token.doctype,
+.code-block .token.cdata {
+  color: var(--muted-foreground);
+}
+
+.code-block .token.punctuation {
+  color: var(--muted-foreground);
+}
+
+.code-block .token.property,
+.code-block .token.tag,
+.code-block .token.boolean,
+.code-block .token.number,
+.code-block .token.constant,
+.code-block .token.symbol {
+  color: oklch(0.55 0.16 250);
+}
+
+.code-block .token.selector,
+.code-block .token.attr-name,
+.code-block .token.string,
+.code-block .token.char,
+.code-block .token.builtin {
+  color: oklch(0.52 0.14 145);
+}
+
+.code-block .token.operator,
+.code-block .token.entity,
+.code-block .token.url,
+.code-block .token.variable {
+  color: oklch(0.55 0.12 50);
+}
+
+.code-block .token.atrule,
+.code-block .token.attr-value,
+.code-block .token.keyword {
+  color: oklch(0.5 0.18 300);
+}
+
+.code-block .token.function,
+.code-block .token.class-name {
+  color: oklch(0.55 0.17 20);
+}
+
+.code-block .token.regex,
+.code-block .token.important {
+  color: oklch(0.55 0.16 35);
+}
+
+.dark .code-block .token.property,
+.dark .code-block .token.tag,
+.dark .code-block .token.boolean,
+.dark .code-block .token.number,
+.dark .code-block .token.constant,
+.dark .code-block .token.symbol {
+  color: oklch(0.78 0.12 250);
+}
+
+.dark .code-block .token.selector,
+.dark .code-block .token.attr-name,
+.dark .code-block .token.string,
+.dark .code-block .token.char,
+.dark .code-block .token.builtin {
+  color: oklch(0.8 0.12 145);
+}
+
+.dark .code-block .token.operator,
+.dark .code-block .token.entity,
+.dark .code-block .token.url,
+.dark .code-block .token.variable {
+  color: oklch(0.82 0.1 70);
+}
+
+.dark .code-block .token.atrule,
+.dark .code-block .token.attr-value,
+.dark .code-block .token.keyword {
+  color: oklch(0.8 0.12 300);
+}
+
+.dark .code-block .token.function,
+.dark .code-block .token.class-name {
+  color: oklch(0.8 0.12 30);
+}
