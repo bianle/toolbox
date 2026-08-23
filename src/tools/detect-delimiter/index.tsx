@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
-import { CheckIcon, CopyIcon, ScanText } from 'lucide-react'
+import { CheckIcon, CopyIcon } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Field,
@@ -22,7 +21,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import {
   detectDelimiter,
-  formatDelimiter,
   rowsToJson,
   rowsToTsv,
   splitByDelimiter,
@@ -32,6 +30,17 @@ const SAMPLE = `name, age, city
 Alice, 30, Shanghai
 Bob, 25, Beijing
 Carol, 28, Shenzhen`
+
+const COMMON_DELIMITERS: { value: string; label: string }[] = [
+  { value: ', ', label: ',␠' },
+  { value: ',', label: ',' },
+  { value: '\t', label: '\\t' },
+  { value: '|', label: '|' },
+  { value: ';', label: ';' },
+  { value: ' ', label: '空格' },
+  { value: '，', label: '，' },
+  { value: '、', label: '、' },
+]
 
 const PREVIEW_ROWS = 12
 
@@ -77,59 +86,36 @@ export default function DetectDelimiterTool() {
             spellCheck={false}
           />
           <FieldDescription>
-            自动识别常见分隔符；也可在下方自定义。
+            可点选常用分隔符，或直接在输入框修改。
           </FieldDescription>
         </Field>
-
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setInput(SAMPLE)
-              setManualDelimiter(null)
-            }}
-          >
-            <ScanText data-icon="inline-start" />
-            填入示例
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setManualDelimiter(null)}
-            disabled={manualDelimiter === null}
-          >
-            恢复自动识别
-          </Button>
-        </div>
 
         <Field>
           <FieldLabel htmlFor="custom-delimiter">分隔符</FieldLabel>
           <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap gap-1.5">
+              {COMMON_DELIMITERS.map((item) => (
+                <Button
+                  key={item.label}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="font-mono"
+                  onClick={() => setManualDelimiter(item.value)}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </div>
             <Input
               id="custom-delimiter"
               value={activeDelimiter ?? ''}
               onChange={(event) => setManualDelimiter(event.target.value)}
-              className="max-w-xs font-mono"
+              className="max-w-40 font-mono"
               spellCheck={false}
-              placeholder="例如 , 或 ,␠"
+              placeholder=", "
             />
-            {hasResult ? (
-              <Badge variant="secondary">
-                {formatDelimiter(activeDelimiter)}
-              </Badge>
-            ) : null}
-            {manualDelimiter !== null ? (
-              <Badge variant="outline">自定义</Badge>
-            ) : detection.best ? (
-              <Badge variant="outline">自动</Badge>
-            ) : null}
           </div>
-          <FieldDescription>
-            可输入任意分隔符，例如 <span className="font-mono">,</span>、
-            <span className="font-mono">, </span>、
-            <span className="font-mono">|</span>。
-          </FieldDescription>
         </Field>
       </FieldGroup>
 
@@ -223,7 +209,7 @@ export default function DetectDelimiterTool() {
         </Field>
       ) : input.trim() && !hasResult ? (
         <p className="text-sm text-muted-foreground">
-          未能自动识别分隔符，请在上方自定义。
+          未能识别分隔符，请点选或输入分隔符。
         </p>
       ) : null}
     </div>
