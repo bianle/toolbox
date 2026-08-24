@@ -67,7 +67,7 @@ export function AppLayout() {
 
       <Separator />
       <footer className="px-4 py-3 text-center text-xs text-muted-foreground">
-        个人 HTML 工具集 · 纯前端本地处理
+        个人 HTML 工具箱 · 纯前端本地处理
       </footer>
     </div>
   )

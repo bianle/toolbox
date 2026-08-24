@@ -13,7 +13,7 @@ export function HomePage() {
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <h1 className="font-heading text-2xl font-medium tracking-tight">
-          工具集
+          工具箱
         </h1>
         <p className="text-sm text-muted-foreground">
           本地处理、不上传数据。从下方挑选一个工具即可开始。
