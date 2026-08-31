@@ -191,10 +191,9 @@ export function csvToHtml(
   }
 }
 
-export const SAMPLE_CSV = `应用名称,模板ID,模板标题,类型,日期,审核状态
-1桶水微信,593377,门店审核失败,通知,2020-05-11,审核通过
-1桶水微信,593378,门店审核失败,通知,2020-05-11,审核通过
-1桶水微信,593376,门店审核通过,通知,2020-05-11,审核通过`
+export const SAMPLE_CSV = `名称,ID,标题,分类,日期,状态
+示例项目 A,1001,条目一,类型 A,2024-03-15,已完成
+示例项目 B,1002,条目二,类型 B,2024-03-16,进行中`
 
 export function formatDelimiterLabel(delimiter: string) {
   if (delimiter === '\t') return '制表符'
