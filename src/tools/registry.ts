@@ -19,6 +19,8 @@ import {
   ScanText,
   Shield,
   Smile,
+  Table,
+  Table2,
 } from 'lucide-react'
 import { lazy } from 'react'
 
@@ -299,6 +301,44 @@ export const tools: ToolDefinition[] = [
     ],
     icon: CalendarClock,
     component: lazy(() => import('@/tools/datetime')),
+  },
+  {
+    id: 'html-to-csv',
+    name: 'HTML 转 CSV',
+    description: '将 HTML 表格或 ul 列表提取为 CSV',
+    path: '/html-to-csv',
+    category: 'convert',
+    keywords: [
+      'html',
+      'csv',
+      'table',
+      'ul',
+      'list',
+      'extract',
+      '表格',
+      '列表',
+      '转换',
+    ],
+    icon: Table,
+    component: lazy(() => import('@/tools/html-to-csv')),
+  },
+  {
+    id: 'csv-to-html',
+    name: 'CSV 转 HTML',
+    description: '将 CSV 文本转换为 HTML table 表格',
+    path: '/csv-to-html',
+    category: 'convert',
+    keywords: [
+      'csv',
+      'html',
+      'table',
+      'convert',
+      '表格',
+      '转换',
+      'tsv',
+    ],
+    icon: Table2,
+    component: lazy(() => import('@/tools/csv-to-html')),
   },
   {
     id: 'bcrypt',
