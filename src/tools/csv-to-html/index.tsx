@@ -186,7 +186,7 @@ export default function CsvToHtmlTool() {
                   {bodyRows.map((row, rowIndex) => (
                     <TableRow key={rowIndex}>
                       <TableCell className="text-muted-foreground">
-                        {rowIndex + 1 + (useHeaderRow ? 1 : 0)}
+                        {rowIndex + 1}
                       </TableCell>
                       {Array.from({ length: colCount }, (_, colIndex) => (
                         <TableCell

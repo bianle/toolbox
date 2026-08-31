@@ -225,7 +225,7 @@ export default function HtmlToCsvTool() {
                   {bodyRows.map((row, rowIndex) => (
                     <TableRow key={rowIndex}>
                       <TableCell className="text-muted-foreground">
-                        {rowIndex + 1 + (showFirstRowAsHeader ? 1 : 0)}
+                        {rowIndex + 1}
                       </TableCell>
                       {Array.from({ length: colCount }, (_, colIndex) => (
                         <TableCell
