@@ -24,6 +24,7 @@
     "clsx": "^2.1.1",
     "diff": "^9.0.0",
     "diff2html": "^3.4.56",
+    "eastasianwidth": "^0.3.0",
     "fast-xml-parser": "^5.11.0",
     "html-to-image": "^1.11.13",
     "jieba-wasm": "^2.4.0",

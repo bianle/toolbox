@@ -19,7 +19,7 @@ export default function TextCountTool() {
   return (
     <div className="flex flex-col gap-4">
       <FieldDescription>
-        输入即统计。字符按 Unicode 码点；汉字按 Han 脚本；英文词按连续字母/数字。
+        输入即统计。字符按 Unicode 码点；汉字按 Han 脚本；显示宽度按东亚宽度（汉字 2、英文 1）；英文词按连续字母/数字。
       </FieldDescription>
 
       <div className="grid gap-4 md:grid-cols-2">

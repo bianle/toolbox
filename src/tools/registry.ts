@@ -99,6 +99,8 @@ export const tools: ToolDefinition[] = [
       '词数',
       '行数',
       '字节',
+      '宽度',
+      '显示宽度',
       '统计',
       'length',
     ],

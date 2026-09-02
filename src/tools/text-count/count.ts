@@ -1,3 +1,5 @@
+import eaw from 'eastasianwidth'
+
 export interface TextStats {
   /** Unicode 码点数（含空格） */
   chars: number
@@ -7,6 +9,8 @@ export interface TextStats {
   charsNoWhitespace: number
   /** 汉字（Han） */
   han: number
+  /** 东亚显示宽度（汉字等宽字符 2，英文等窄字符 1） */
+  displayWidth: number
   /** 英文/数字词（连续字母数字） */
   words: number
   /** 行数（空输入为 0） */
@@ -33,6 +37,7 @@ export function countText(text: string): TextStats {
       charsNoSpace: 0,
       charsNoWhitespace: 0,
       han: 0,
+      displayWidth: 0,
       words: 0,
       lines: 0,
       nonEmptyLines: 0,
@@ -46,6 +51,7 @@ export function countText(text: string): TextStats {
   const charsNoSpace = points.filter((ch) => ch !== ' ').length
   const charsNoWhitespace = points.filter((ch) => !/\s/u.test(ch)).length
   const han = text.match(HAN_RE)?.length ?? 0
+  const displayWidth = eaw.length(text)
   const words = text.match(WORD_RE)?.length ?? 0
 
   const rawLines = text.split(/\r\n|\n|\r/)
@@ -64,6 +70,7 @@ export function countText(text: string): TextStats {
     charsNoSpace,
     charsNoWhitespace,
     han,
+    displayWidth,
     words,
     lines,
     nonEmptyLines,
@@ -78,6 +85,11 @@ export const STAT_ROWS: { key: keyof TextStats; label: string; hint?: string }[]
     { key: 'charsNoSpace', label: '字符（不含空格）' },
     { key: 'charsNoWhitespace', label: '字符（不含空白）', hint: '不含空格、制表、换行等' },
     { key: 'han', label: '汉字' },
+    {
+      key: 'displayWidth',
+      label: '显示宽度',
+      hint: '东亚宽度：汉字等宽字符计 2，英文等窄字符计 1',
+    },
     { key: 'words', label: '英文词', hint: '连续字母/数字' },
     { key: 'lines', label: '行数' },
     { key: 'nonEmptyLines', label: '非空行' },
