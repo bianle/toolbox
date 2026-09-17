@@ -237,15 +237,6 @@ export default function JsonArraySortTool() {
               onCheckedChange={setCaseSensitive}
             />
           </Field>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="mb-0.5"
-            onClick={() => setInput(SAMPLE_JSON)}
-          >
-            载入示例
-          </Button>
         </div>
 
         <FieldDescription>
