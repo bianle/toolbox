@@ -233,7 +233,8 @@ export default function JsonArraySortTool() {
 
         <FieldDescription>
           自动识别 JSON 中的数组字段，多个时可选择；排序字段为数组元素的对象键。
-          默认大小写不敏感，数字与数字字符串按数值比较。
+          默认大小写不敏感（按语言环境，数字字符串按数值比较）；开启大小写敏感后
+          按字符编码比较，大写字母排在小写字母之前。
         </FieldDescription>
       </FieldGroup>
 

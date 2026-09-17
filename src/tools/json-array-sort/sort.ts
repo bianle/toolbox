@@ -109,8 +109,17 @@ function compareValues(a: unknown, b: unknown, caseSensitive: boolean): number {
     return a === b ? 0 : a ? 1 : -1
   }
 
-  return toText(a).localeCompare(toText(b), undefined, {
-    sensitivity: caseSensitive ? 'variant' : 'base',
+  const aText = toText(a)
+  const bText = toText(b)
+
+  if (caseSensitive) {
+    if (aText < bText) return -1
+    if (aText > bText) return 1
+    return 0
+  }
+
+  return aText.localeCompare(bText, undefined, {
+    sensitivity: 'base',
     numeric: true,
   })
 }
