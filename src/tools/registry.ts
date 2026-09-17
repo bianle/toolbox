@@ -1,4 +1,5 @@
 import {
+  ArrowDownAZ,
   ArrowLeftRight,
   Binary,
   Bomb,
@@ -38,6 +39,25 @@ export const tools: ToolDefinition[] = [
     keywords: ['json', 'format', 'beautify', 'minify', 'sort', 'indent', '排序', '缩进'],
     icon: Braces,
     component: lazy(() => import('@/tools/json-format')),
+  },
+  {
+    id: 'json-array-sort',
+    name: 'JSON 数组排序',
+    description: '选择 JSON 中的数组字段，按指定字段排序',
+    path: '/json-array-sort',
+    category: 'format',
+    keywords: [
+      'json',
+      'array',
+      'sort',
+      'order',
+      'field',
+      '数组',
+      '排序',
+      '字段',
+    ],
+    icon: ArrowDownAZ,
+    component: lazy(() => import('@/tools/json-array-sort')),
   },
   {
     id: 'xml-format',
