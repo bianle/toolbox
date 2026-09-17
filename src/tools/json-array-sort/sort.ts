@@ -143,15 +143,15 @@ export function sortArray(
   return decorated.map((entry) => entry.item)
 }
 
-export function sortJsonArray(
+export function sortJsonArrays(
   root: unknown,
-  arrayPath: string,
+  arrayPaths: string[],
   sortField: string | null,
   options: SortOptions = {},
 ): unknown {
-  const target = resolvePath(root, arrayPath)
-  if (!Array.isArray(target)) {
-    throw new Error('所选字段不是数组')
-  }
-  return setAtPath(root, arrayPath, sortArray(target, sortField, options))
+  return arrayPaths.reduce((acc, path) => {
+    const target = resolvePath(acc, path)
+    if (!Array.isArray(target)) return acc
+    return setAtPath(acc, path, sortArray(target, sortField, options))
+  }, root)
 }

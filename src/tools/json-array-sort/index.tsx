@@ -24,10 +24,9 @@ import {
   resolvePath,
   SAMPLE_JSON,
   SELF_FIELD,
-  sortJsonArray,
+  sortJsonArrays,
 } from '@/tools/json-array-sort/sort'
 
-const ROOT_ARRAY = '__root__'
 const SELF_LABEL = '（按元素本身）'
 
 const DIRECTION_OPTIONS = [
@@ -35,13 +34,9 @@ const DIRECTION_OPTIONS = [
   { value: 'desc', label: '降序 Z → A' },
 ] as const
 
-function toRootValue(path: string) {
-  return path === '' ? ROOT_ARRAY : path
-}
-
 export default function JsonArraySortTool() {
   const [input, setInput] = useState(SAMPLE_JSON)
-  const [arrayPath, setArrayPath] = useState('')
+  const [selectedPaths, setSelectedPaths] = useState<string[] | null>(null)
   const [sortField, setSortField] = useState(SELF_FIELD)
   const [direction, setDirection] = useState<'asc' | 'desc'>('asc')
   const [caseSensitive, setCaseSensitive] = useState(false)
@@ -67,21 +62,29 @@ export default function JsonArraySortTool() {
     [parsed],
   )
 
-  const activeArrayPath = useMemo(() => {
-    if (arrayFields.length === 0) return ''
-    if (arrayFields.some((field) => field.path === arrayPath)) return arrayPath
-    return arrayFields[0].path
-  }, [arrayFields, arrayPath])
+  const activeArrayPaths = useMemo(() => {
+    if (arrayFields.length === 0) return []
+    if (selectedPaths === null) return [arrayFields[0].path]
+    return selectedPaths.filter((path) =>
+      arrayFields.some((field) => field.path === path),
+    )
+  }, [arrayFields, selectedPaths])
 
-  const selectedArray = useMemo(() => {
-    const value = resolvePath(parsed.data, activeArrayPath)
-    return Array.isArray(value) ? value : null
-  }, [parsed.data, activeArrayPath])
-
-  const sortFields = useMemo(
-    () => (selectedArray ? collectSortFields(selectedArray) : []),
-    [selectedArray],
+  const selectedArrays = useMemo(
+    () =>
+      activeArrayPaths
+        .map((path) => resolvePath(parsed.data, path))
+        .filter((value): value is unknown[] => Array.isArray(value)),
+    [parsed.data, activeArrayPaths],
   )
+
+  const sortFields = useMemo(() => {
+    const fields = new Set<string>()
+    for (const array of selectedArrays) {
+      for (const field of collectSortFields(array)) fields.add(field)
+    }
+    return [...fields]
+  }, [selectedArrays])
 
   const activeSortField = useMemo(() => {
     if (sortFields.length === 0) return SELF_FIELD
@@ -92,13 +95,13 @@ export default function JsonArraySortTool() {
   }, [sortFields, sortField])
 
   const result = useMemo(() => {
-    if (parsed.error || parsed.empty || arrayFields.length === 0) {
+    if (parsed.error || parsed.empty || activeArrayPaths.length === 0) {
       return { output: '', error: null as string | null }
     }
     try {
-      const sorted = sortJsonArray(
+      const sorted = sortJsonArrays(
         parsed.data,
-        activeArrayPath,
+        activeArrayPaths,
         activeSortField === SELF_FIELD ? null : activeSortField,
         { caseSensitive, descending: direction === 'desc' },
       )
@@ -109,9 +112,25 @@ export default function JsonArraySortTool() {
         error: err instanceof Error ? err.message : '排序失败',
       }
     }
-  }, [parsed, arrayFields, activeArrayPath, activeSortField, caseSensitive, direction])
+  }, [
+    parsed,
+    activeArrayPaths,
+    activeSortField,
+    caseSensitive,
+    direction,
+  ])
 
   const error = parsed.error ?? result.error
+
+  function toggleArrayPath(path: string) {
+    setSelectedPaths((prev) => {
+      const current =
+        prev ?? (arrayFields.length > 0 ? [arrayFields[0].path] : [])
+      return current.includes(path)
+        ? current.filter((item) => item !== path)
+        : [...current, path]
+    })
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -123,39 +142,37 @@ export default function JsonArraySortTool() {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="粘贴 JSON…"
-            className="min-h-52 font-mono text-sm"
+            className="min-h-52 max-h-96 overflow-auto font-mono text-sm"
             spellCheck={false}
           />
         </Field>
 
-        <div className="flex flex-wrap items-end gap-4">
-          <Field className="w-48">
-            <FieldLabel>数组字段</FieldLabel>
-            <Select
-              value={toRootValue(activeArrayPath)}
-              onValueChange={(value) => {
-                if (value) setArrayPath(value === ROOT_ARRAY ? '' : value)
-              }}
-              disabled={arrayFields.length === 0}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="未发现数组" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {arrayFields.map((field) => (
-                    <SelectItem
-                      key={toRootValue(field.path)}
-                      value={toRootValue(field.path)}
-                    >
-                      {field.label}（{field.length} 项）
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </Field>
+        <Field>
+          <FieldLabel>数组字段（可多选）</FieldLabel>
+          {arrayFields.length === 0 ? (
+            <p className="text-sm text-muted-foreground">未发现数组</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {arrayFields.map((field) => {
+                const selected = activeArrayPaths.includes(field.path)
+                return (
+                  <Button
+                    key={field.path || '__root__'}
+                    type="button"
+                    size="sm"
+                    variant={selected ? 'default' : 'outline'}
+                    aria-pressed={selected}
+                    onClick={() => toggleArrayPath(field.path)}
+                  >
+                    {field.label}（{field.length} 项）
+                  </Button>
+                )
+              })}
+            </div>
+          )}
+        </Field>
 
+        <div className="flex flex-wrap items-end gap-4">
           <Field className="w-44">
             <FieldLabel>排序字段</FieldLabel>
             <Select
@@ -163,7 +180,7 @@ export default function JsonArraySortTool() {
               onValueChange={(value) => {
                 if (value) setSortField(value)
               }}
-              disabled={!selectedArray}
+              disabled={selectedArrays.length === 0}
             >
               <SelectTrigger>
                 <SelectValue placeholder="按元素本身" />
@@ -232,9 +249,10 @@ export default function JsonArraySortTool() {
         </div>
 
         <FieldDescription>
-          自动识别 JSON 中的数组字段，多个时可选择；排序字段为数组元素的对象键。
-          默认大小写不敏感（按语言环境，数字字符串按数值比较）；开启大小写敏感后
-          按字符编码比较，大写字母排在小写字母之前。
+          自动识别 JSON 中的数组字段，可多选并用同一排序字段一起排序；缺少该字段的
+          数组保持原顺序。排序字段为数组元素的对象键。默认大小写不敏感（按语言环境，
+          数字字符串按数值比较）；开启大小写敏感后按字符编码比较，大写字母排在小写
+          字母之前。
         </FieldDescription>
       </FieldGroup>
 
