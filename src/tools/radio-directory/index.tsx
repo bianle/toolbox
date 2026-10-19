@@ -119,7 +119,7 @@ function StationCard({ station }: { station: RadioStation }) {
       for (let index = 0; index < items.length; index += 1) {
         await copyToClipboard(items[index]!.value)
         if (index < items.length - 1) {
-          await new Promise((resolve) => window.setTimeout(resolve, 500))
+          await new Promise((resolve) => window.setTimeout(resolve, 1000))
         }
       }
       toast.success(`已依次复制${items.map((item) => item.label).join('、')}`)
