@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   CheckIcon,
+  ClipboardListIcon,
   CopyIcon,
   ExternalLinkIcon,
   ListMusicIcon,
@@ -8,6 +9,7 @@ import {
   RefreshCwIcon,
   SearchIcon,
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,6 +30,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
+import { copyToClipboard } from '@/utils/clipboard'
 import {
   buildM3u,
   countryFlag,
@@ -46,11 +49,11 @@ const ALL = 'all'
 
 const DEFAULT_FILTERS = {
   name: '',
-  countrycode: ALL,
+  countrycode: 'CN',
   language: '',
   tag: '',
   codec: ALL,
-  order: 'clicktrend',
+  order: 'clickcount',
 }
 
 type Filters = typeof DEFAULT_FILTERS
@@ -90,6 +93,8 @@ function buildQuery(filters: Filters, offset: number): StationQuery {
 
 function StationCard({ station }: { station: RadioStation }) {
   const { copied, copy } = useCopyToClipboard()
+  const [copyingInfo, setCopyingInfo] = useState(false)
+  const [infoCopied, setInfoCopied] = useState(false)
   const url = getStreamUrl(station)
   const website = getWebsiteUrl(station)
   const name = (station.name ?? '').trim() || '未命名电台'
@@ -98,6 +103,34 @@ function StationCard({ station }: { station: RadioStation }) {
     .split(',')
     .map((tag) => tag.trim())
     .filter(Boolean)
+
+  async function copyStationInfo() {
+    const items = [
+      { label: '标题', value: name },
+      { label: '官网', value: website },
+      { label: '地址', value: url },
+    ].filter((item): item is { label: string; value: string } =>
+      Boolean(item.value),
+    )
+    if (items.length === 0) return
+
+    setCopyingInfo(true)
+    try {
+      for (let index = 0; index < items.length; index += 1) {
+        await copyToClipboard(items[index]!.value)
+        if (index < items.length - 1) {
+          await new Promise((resolve) => window.setTimeout(resolve, 200))
+        }
+      }
+      toast.success(`已依次复制${items.map((item) => item.label).join('、')}`)
+      setInfoCopied(true)
+      window.setTimeout(() => setInfoCopied(false), 1500)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '复制失败')
+    } finally {
+      setCopyingInfo(false)
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-start sm:justify-between">
@@ -159,6 +192,21 @@ function StationCard({ station }: { station: RadioStation }) {
             <CopyIcon data-icon="inline-start" />
           )}
           {copied ? '已复制' : '复制地址'}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => void copyStationInfo()}
+          disabled={!url || copyingInfo}
+          title="依次复制标题、官网链接、流地址"
+        >
+          {infoCopied ? (
+            <CheckIcon data-icon="inline-start" />
+          ) : (
+            <ClipboardListIcon data-icon="inline-start" />
+          )}
+          {copyingInfo ? '复制中…' : infoCopied ? '已复制' : '复制信息'}
         </Button>
         {website ? (
           <Button type="button" size="sm" variant="outline" asChild>
@@ -303,7 +351,7 @@ export default function RadioDirectoryTool() {
             </Button>
           </div>
           <FieldDescription>
-            数据来自 radio-browser.info。复制流地址后，可以直接粘贴到 VLC、foobar2000、MusicBee 等播放器。
+            默认展示中国区点击最多的电台；数据来自 radio-browser.info。复制流地址后，可以直接粘贴到 VLC、foobar2000、MusicBee 等播放器。
           </FieldDescription>
         </Field>
 
