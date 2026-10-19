@@ -101,9 +101,11 @@ export async function fetchStations(
   query: StationQuery,
   signal?: AbortSignal,
 ) {
+  const order = query.order ?? 'clicktrend'
   const params = new URLSearchParams()
   params.set('hidebroken', 'true')
-  params.set('order', query.order ?? 'clicktrend')
+  params.set('order', order)
+  params.set('reverse', order === 'name' ? 'false' : 'true')
   params.set('offset', String(query.offset ?? 0))
   params.set('limit', String(query.limit ?? 30))
 
