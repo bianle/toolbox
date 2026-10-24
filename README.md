@@ -15,6 +15,7 @@
 | JSON 格式化 | `/json-format` | 格式化、压缩与校验 |
 | DiceFace | `/diceface` | 字符串生成可复现哈希头像 |
 | 外网 IP | `/public-ip` | 查询出口公网 IPv4 / IPv6 |
+| 专辑封面 | `/cover-search` | 搜索并下载 iTunes 专辑、单曲与 MV 封面 |
 | 二维码生成 | `/qr-code` | 文本/链接生成本地二维码 |
 | OTP 生成器 | `/otp` | 本地 TOTP、绑定二维码 |
 
