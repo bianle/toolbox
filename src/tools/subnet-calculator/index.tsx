@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CheckIcon, CopyIcon } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -9,9 +10,8 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Slider } from '@/components/ui/slider'
 import {
   Table,
   TableBody,
@@ -62,6 +62,7 @@ function buildRows(result: SubnetResult) {
     { label: '通配符掩码', value: result.wildcardMask },
     { label: '网络地址', value: result.network },
     { label: '广播地址', value: result.broadcast },
+    { label: 'IP 性质', value: result.ipRole },
     { label: '可用主机范围', value: result.hostRange },
     { label: '可用主机数', value: result.usableHosts.toLocaleString('en-US') },
     { label: '地址总数', value: result.totalHosts.toLocaleString('en-US') },
@@ -74,10 +75,27 @@ function buildRows(result: SubnetResult) {
   ]
 }
 
+const DEFAULT_IP = '192.168.1.10'
+const DEFAULT_MASK = '24'
+const DEFAULT_TARGET_PREFIX = '24'
+
 export default function SubnetCalculatorTool() {
-  const [ip, setIp] = useState('192.168.1.10')
-  const [mask, setMask] = useState('24')
-  const [targetPrefix, setTargetPrefix] = useState('24')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [ip, setIp] = useState(() => searchParams.get('ip') ?? DEFAULT_IP)
+  const [mask, setMask] = useState(
+    () => searchParams.get('mask') ?? DEFAULT_MASK,
+  )
+  const [targetPrefix, setTargetPrefix] = useState(
+    () => searchParams.get('target') ?? DEFAULT_TARGET_PREFIX,
+  )
+
+  useEffect(() => {
+    const next = new URLSearchParams()
+    if (ip.trim()) next.set('ip', ip.trim())
+    if (mask.trim()) next.set('mask', mask.trim())
+    if (targetPrefix.trim()) next.set('target', targetPrefix.trim())
+    setSearchParams(next, { replace: true })
+  }, [ip, mask, targetPrefix, setSearchParams])
 
   const result = useMemo(() => {
     if (!ip.trim() && !mask.trim()) {
@@ -179,23 +197,29 @@ export default function SubnetCalculatorTool() {
             <FieldGroup>
               <Field>
                 <FieldLabel>目标前缀</FieldLabel>
-                <RadioGroup
-                  value={String(selectedPrefix)}
-                  onValueChange={setTargetPrefix}
-                  className="flex flex-wrap gap-x-4 gap-y-2"
-                >
-                  {prefixOptions.map((prefix) => {
-                    const id = `subnet-target-${prefix}`
-                    return (
-                      <div key={prefix} className="flex items-center gap-2">
-                        <RadioGroupItem id={id} value={String(prefix)} />
-                        <Label htmlFor={id} className="font-mono">
-                          /{prefix}
-                        </Label>
-                      </div>
-                    )
-                  })}
-                </RadioGroup>
+                <div className="flex items-center gap-3">
+                  <Slider
+                    value={[selectedPrefix ?? result.value.prefix]}
+                    min={result.value.prefix}
+                    max={32}
+                    step={1}
+                    ticks={prefixOptions}
+                    disabled={result.value.prefix >= 32}
+                    onValueChange={(values) =>
+                      setTargetPrefix(
+                        String(values[0] ?? result.value.prefix),
+                      )
+                    }
+                    className="flex-1"
+                  />
+                  <span className="w-12 shrink-0 text-right font-mono text-sm">
+                    /{selectedPrefix ?? result.value.prefix}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>/{result.value.prefix}</span>
+                  <span>/32</span>
+                </div>
               </Field>
               <FieldDescription>
                 将当前 /{result.value.prefix} 网段按目标前缀拆分，逐段列出起始

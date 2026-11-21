@@ -33,6 +33,7 @@ export interface SubnetResult {
   broadcastBinary: string
   ipClass: string
   scope: string
+  ipRole: string
 }
 
 function parseIpv4(value: string): number {
@@ -161,6 +162,17 @@ export function calculateSubnet(
   const firstHost = hostBits >= 2 ? network + 1 : network
   const lastHost = hostBits >= 2 ? broadcast - 1 : broadcast
 
+  const ipRole =
+    prefix >= 32
+      ? '单一主机地址（/32）'
+      : prefix === 31
+        ? '点对点可用地址（/31）'
+        : ip === (network >>> 0)
+          ? '网络地址'
+          : ip === broadcast
+            ? '广播地址'
+            : '普通主机地址'
+
   return {
     ip: formatIpv4(ip),
     prefix,
@@ -179,6 +191,7 @@ export function calculateSubnet(
     broadcastBinary: formatBinary(broadcast),
     ipClass: getIpClass(ip),
     scope: getScope(ip),
+    ipRole,
   }
 }
 
