@@ -1,3 +1,20 @@
+export interface SubnetSegment {
+  index: number
+  cidr: string
+  network: string
+  firstHost: string
+  lastHost: string
+  broadcast: string
+  usableHosts: number
+}
+
+export interface SubnetSplit {
+  targetPrefix: number
+  total: number
+  truncated: boolean
+  segments: SubnetSegment[]
+}
+
 export interface SubnetResult {
   ip: string
   prefix: number
@@ -162,5 +179,55 @@ export function calculateSubnet(
     broadcastBinary: formatBinary(broadcast),
     ipClass: getIpClass(ip),
     scope: getScope(ip),
+  }
+}
+
+export function splitSubnets(
+  network: string,
+  currentPrefix: number,
+  targetPrefix: number,
+  limit = 512,
+): SubnetSplit {
+  if (!Number.isInteger(targetPrefix)) {
+    throw new Error('目标前缀应为整数')
+  }
+  if (targetPrefix < 0 || targetPrefix > 32) {
+    throw new Error('目标前缀应在 0–32 之间')
+  }
+  if (targetPrefix < currentPrefix) {
+    throw new Error('目标前缀不能小于当前前缀')
+  }
+
+  const base = parseIpv4(network)
+  const targetMask = prefixToMask(targetPrefix)
+  const wildcard = ~targetMask >>> 0
+  const hostBits = 32 - targetPrefix
+  const step = 2 ** hostBits
+  const total = 2 ** (targetPrefix - currentPrefix)
+  const count = Math.min(total, limit)
+
+  const segments: SubnetSegment[] = []
+  for (let i = 0; i < count; i += 1) {
+    const net = (base + i * step) >>> 0
+    const broadcast = (net | wildcard) >>> 0
+    const firstHost = hostBits >= 2 ? net + 1 : net
+    const lastHost = hostBits >= 2 ? broadcast - 1 : broadcast
+
+    segments.push({
+      index: i + 1,
+      cidr: `${formatIpv4(net)}/${targetPrefix}`,
+      network: formatIpv4(net),
+      firstHost: formatIpv4(firstHost),
+      lastHost: formatIpv4(lastHost),
+      broadcast: formatIpv4(broadcast),
+      usableHosts: hostBits >= 2 ? step - 2 : step,
+    })
+  }
+
+  return {
+    targetPrefix,
+    total,
+    truncated: total > count,
+    segments,
   }
 }
