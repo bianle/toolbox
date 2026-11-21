@@ -225,7 +225,7 @@ export const tools: ToolDefinition[] = [
     name: '外网 IP',
     description: '查询当前设备的出口公网 IP',
     path: '/public-ip',
-    category: 'other',
+    category: 'network',
     keywords: ['ip', 'public', '外网', '公网', 'ipify'],
     icon: Globe,
     component: lazy(() => import('@/tools/public-ip')),
@@ -391,7 +391,7 @@ export const tools: ToolDefinition[] = [
     name: '子网掩码计算器',
     description: '根据 IPv4 与掩码计算网络地址、广播地址与可用主机范围',
     path: '/subnet-calculator',
-    category: 'convert',
+    category: 'network',
     keywords: [
       'subnet',
       'mask',

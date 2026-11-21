@@ -9,6 +9,8 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Table,
@@ -18,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import {
   calculateSubnet,
@@ -90,16 +93,21 @@ export default function SubnetCalculatorTool() {
     }
   }, [ip, mask])
 
+  const prefixOptions = result.ok
+    ? Array.from(
+        { length: 33 - result.value.prefix },
+        (_, index) => result.value.prefix + index,
+      )
+    : []
+  const selectedPrefix = result.ok
+    ? prefixOptions.includes(Number(targetPrefix))
+      ? Number(targetPrefix)
+      : result.value.prefix
+    : null
+
   const split = useMemo(() => {
-    if (!result.ok) {
+    if (!result.ok || selectedPrefix === null) {
       return null
-    }
-    const trimmed = targetPrefix.trim()
-    if (!trimmed) {
-      return null
-    }
-    if (!/^\d{1,2}$/.test(trimmed)) {
-      return { ok: false as const, error: '目标前缀应为 0–32 的整数' }
     }
     try {
       return {
@@ -107,7 +115,7 @@ export default function SubnetCalculatorTool() {
         value: splitSubnets(
           result.value.network,
           result.value.prefix,
-          Number(trimmed),
+          selectedPrefix,
         ),
       }
     } catch (error) {
@@ -116,14 +124,14 @@ export default function SubnetCalculatorTool() {
         error: error instanceof Error ? error.message : '拆分失败',
       }
     }
-  }, [result, targetPrefix])
+  }, [result, selectedPrefix])
 
   const rows = result.ok ? buildRows(result.value) : []
 
   return (
     <div className="flex flex-col gap-6">
       <FieldGroup>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field>
             <FieldLabel htmlFor="subnet-ip">IP 地址</FieldLabel>
             <Input
@@ -146,87 +154,110 @@ export default function SubnetCalculatorTool() {
               placeholder="24、/24 或 255.255.255.0"
             />
           </Field>
-          <Field>
-            <FieldLabel htmlFor="subnet-target">拆分目标前缀</FieldLabel>
-            <Input
-              id="subnet-target"
-              value={targetPrefix}
-              onChange={(event) => setTargetPrefix(event.target.value)}
-              className="font-mono"
-              spellCheck={false}
-              placeholder="如 24"
-            />
-          </Field>
         </div>
         <FieldDescription>
           支持 CIDR 前缀或点分十进制掩码；IP 中带
           <span className="font-mono"> /24 </span>
-          时会优先生效。填写拆分目标前缀可逐段列出子网起始 IP。全程本地计算。
+          时会优先生效。全程本地计算。
         </FieldDescription>
       </FieldGroup>
 
       {result.ok ? (
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-3">
+        <Tabs defaultValue="info">
+          <TabsList>
+            <TabsTrigger value="info">网段信息</TabsTrigger>
+            <TabsTrigger value="split">子网划分</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="info" className="flex flex-col gap-3 pt-2">
             {rows.map((row) => (
               <ResultRow key={row.label} label={row.label} value={row.value} />
             ))}
-          </div>
+          </TabsContent>
 
-          {split?.ok ? (
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-sm font-medium">
-                  子网拆分（/{split.value.targetPrefix}）
-                </h2>
+          <TabsContent value="split" className="flex flex-col gap-4 pt-2">
+            <FieldGroup>
+              <Field>
+                <FieldLabel>目标前缀</FieldLabel>
+                <RadioGroup
+                  value={String(selectedPrefix)}
+                  onValueChange={setTargetPrefix}
+                  className="flex flex-wrap gap-x-4 gap-y-2"
+                >
+                  {prefixOptions.map((prefix) => {
+                    const id = `subnet-target-${prefix}`
+                    return (
+                      <div key={prefix} className="flex items-center gap-2">
+                        <RadioGroupItem id={id} value={String(prefix)} />
+                        <Label htmlFor={id} className="font-mono">
+                          /{prefix}
+                        </Label>
+                      </div>
+                    )
+                  })}
+                </RadioGroup>
+              </Field>
+              <FieldDescription>
+                将当前 /{result.value.prefix} 网段按目标前缀拆分，逐段列出起始
+                IP。目标前缀需不小于当前前缀。
+              </FieldDescription>
+            </FieldGroup>
+
+            {split?.ok ? (
+              <div className="flex flex-col gap-3">
                 <p className="text-xs text-muted-foreground">
-                  共 {split.value.total.toLocaleString('en-US')} 段
+                  /{result.value.prefix} → /{split.value.targetPrefix}：共{' '}
+                  {split.value.total.toLocaleString('en-US')} 段
                   {split.value.truncated
                     ? `，仅显示前 ${split.value.segments.length} 段`
                     : ''}
                 </p>
-              </div>
-              <ScrollArea className="h-80 rounded-lg ring-1 ring-foreground/10">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-14">#</TableHead>
-                      <TableHead>网络地址（CIDR）</TableHead>
-                      <TableHead>起始可用 IP</TableHead>
-                      <TableHead>结束可用 IP</TableHead>
-                      <TableHead>广播地址</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {split.value.segments.map((segment) => (
-                      <TableRow key={segment.index}>
-                        <TableCell className="text-muted-foreground">
-                          {segment.index}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {segment.cidr}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {segment.firstHost}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {segment.lastHost}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {segment.broadcast}
-                        </TableCell>
+                <ScrollArea className="h-80 rounded-lg ring-1 ring-foreground/10">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-14">#</TableHead>
+                        <TableHead>网络地址（CIDR）</TableHead>
+                        <TableHead>起始可用 IP</TableHead>
+                        <TableHead>结束可用 IP</TableHead>
+                        <TableHead>可用 IP 数</TableHead>
+                        <TableHead>广播地址</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            </div>
-          ) : split && !split.ok ? (
-            <p className="text-sm text-destructive" role="alert">
-              {split.error}
-            </p>
-          ) : null}
-        </div>
+                    </TableHeader>
+                    <TableBody>
+                      {split.value.segments.map((segment) => (
+                        <TableRow key={segment.index}>
+                          <TableCell className="text-muted-foreground">
+                            {segment.index}
+                          </TableCell>
+                          <TableCell className="font-mono">
+                            {segment.cidr}
+                          </TableCell>
+                          <TableCell className="font-mono">
+                            {segment.firstHost}
+                          </TableCell>
+                          <TableCell className="font-mono">
+                            {segment.lastHost}
+                          </TableCell>
+                          <TableCell className="font-mono">
+                            {segment.usableHosts.toLocaleString('en-US')}
+                          </TableCell>
+                          <TableCell className="font-mono">
+                            {segment.broadcast}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </div>
+            ) : split && !split.ok ? (
+              <p className="text-sm text-destructive" role="alert">
+                {split.error}
+              </p>
+            ) : null}
+          </TabsContent>
+        </Tabs>
       ) : result.error ? (
         <p className="text-sm text-destructive" role="alert">
           {result.error}
