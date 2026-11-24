@@ -1,7 +1,13 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ComponentType, LazyExoticComponent } from 'react'
 
-export type ToolCategory = 'encode' | 'format' | 'convert' | 'text' | 'other'
+export type ToolCategory =
+  | 'encode'
+  | 'format'
+  | 'convert'
+  | 'text'
+  | 'network'
+  | 'other'
 
 export interface ToolDefinition {
   id: string

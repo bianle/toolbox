@@ -5,6 +5,7 @@ export const CATEGORY_ORDER: ToolCategory[] = [
   'text',
   'convert',
   'encode',
+  'network',
   'other',
 ]
 
@@ -13,5 +14,6 @@ export const CATEGORY_LABELS: Record<ToolCategory, string> = {
   text: '文本',
   convert: '转换',
   encode: '编码',
+  network: '网络',
   other: '其他',
 }

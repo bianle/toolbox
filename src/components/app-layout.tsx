@@ -1,11 +1,14 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { ChevronDownIcon, WrenchIcon } from 'lucide-react'
+import { ChevronDownIcon, MenuIcon, WrenchIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
@@ -26,7 +29,7 @@ export function AppLayout() {
             <WrenchIcon className="size-4" />
             Toolbox
           </Link>
-          <nav className="flex flex-nowrap items-center gap-1 overflow-x-auto text-sm">
+          <nav className="hidden flex-nowrap items-center gap-1 text-sm sm:flex">
             {CATEGORY_ORDER.map((category) => {
               const items = tools.filter((tool) => tool.category === category)
               if (items.length === 0) return null
@@ -58,6 +61,49 @@ export function AppLayout() {
               )
             })}
           </nav>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="sm:hidden"
+                aria-label="打开菜单"
+              >
+                <MenuIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {CATEGORY_ORDER.map((category, index) => {
+                const items = tools.filter(
+                  (tool) => tool.category === category,
+                )
+                if (items.length === 0) return null
+
+                return (
+                  <DropdownMenuGroup key={category}>
+                    {index > 0 ? <DropdownMenuSeparator /> : null}
+                    <DropdownMenuLabel>
+                      {CATEGORY_LABELS[category]}
+                    </DropdownMenuLabel>
+                    {items.map((tool) => (
+                      <DropdownMenuItem
+                        key={tool.id}
+                        asChild
+                        className={cn(
+                          location.pathname === tool.path &&
+                            'bg-accent/60 text-accent-foreground',
+                        )}
+                      >
+                        <Link to={tool.path}>{tool.name}</Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                )
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
