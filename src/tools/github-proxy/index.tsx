@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { CheckIcon, CopyIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Field,
   FieldDescription,
@@ -18,21 +19,30 @@ function CopyRow({ value }: { value: string }) {
   const { copied, copy } = useCopyToClipboard()
 
   return (
-    <div className="flex items-center gap-2">
-      <Input value={value} readOnly className="flex-1 font-mono text-sm" />
-      <Button
-        type="button"
-        variant="secondary"
-        size="icon"
-        className="shrink-0"
-        disabled={!value}
-        title={copied ? '已复制' : '复制'}
-        aria-label={copied ? '已复制' : '复制'}
-        onClick={() => void copy(value)}
-      >
-        {copied ? <CheckIcon /> : <CopyIcon />}
-      </Button>
-    </div>
+    <Card size="sm">
+      <CardContent className="flex items-center gap-2">
+        <Input
+          value={value}
+          readOnly
+          className="flex-1 border-0 px-0 font-mono text-sm focus-visible:ring-0"
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="shrink-0"
+          disabled={!value}
+          onClick={() => void copy(value)}
+        >
+          {copied ? (
+            <CheckIcon data-icon="inline-start" />
+          ) : (
+            <CopyIcon data-icon="inline-start" />
+          )}
+          {copied ? '已复制' : '复制'}
+        </Button>
+      </CardContent>
+    </Card>
   )
 }
 
