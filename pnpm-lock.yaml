@@ -59,6 +59,9 @@ importers:
       html-to-image:
         specifier: ^1.11.13
         version: 1.11.13
+      imagetracerjs:
+        specifier: ^1.2.6
+        version: 1.2.6
       jieba-wasm:
         specifier: ^2.4.0
         version: 2.4.0
@@ -77,6 +80,9 @@ importers:
       otpauth:
         specifier: ^9.5.1
         version: 9.5.1
+      potrace-wasm:
+        specifier: ^1.0.4
+        version: 1.0.4
       prismjs:
         specifier: ^1.30.0
         version: 1.30.0
@@ -2205,6 +2211,9 @@ packages:
     resolution: {integrity: sha512-g7dmpshy+gD7mh88OC9NwSGTKoc3kyLAZQRU1mt53Aw/vnvfXnbC+F/7F7QoYVKbV+KNvJx8wArewKy1vXMtlg==}
     engines: {node: '>= 4'}
 
+  imagetracerjs@1.2.6:
+    resolution: {integrity: sha512-LKJlnKmXFzDdh6IZtXTyBxXcCLTAkwgKYS+NMiPXiXVnlTLjQC8fq7U89laUSgHtypJB3TdMMDK4ecG5NI/Cgw==}
+
   import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
     engines: {node: '>=6'}
@@ -2786,6 +2795,9 @@ packages:
   postcss@8.5.26:
     resolution: {integrity: sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==}
     engines: {node: ^10 || ^12 || >=14}
+
+  potrace-wasm@1.0.4:
+    resolution: {integrity: sha512-Bj940W9APwIPZgm3VGK2HUAs6BXffgn5r4cOLIzFUtvX8bI+MlA7zbbE01+k71tz2Mu/jmdTGEcVpLevNJLtjg==}
 
   powershell-utils@0.1.0:
     resolution: {integrity: sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==}
@@ -5304,6 +5316,8 @@ snapshots:
 
   ignore@5.3.0: {}
 
+  imagetracerjs@1.2.6: {}
+
   import-fresh@3.3.0:
     dependencies:
       parent-module: 1.0.1
@@ -5751,6 +5765,8 @@ snapshots:
       nanoid: 3.3.18
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  potrace-wasm@1.0.4: {}
 
   powershell-utils@0.1.0: {}
 
